@@ -1,0 +1,109 @@
+body {
+    margin: 0;
+    /*font-family: 'Sriracha', cursive;*/
+    font-family: 'Architects Daughter', cursive;
+    font-size: 17px;
+    line-height: 24px;
+}
+
+button:hover {
+    cursor: pointer;
+    transform: scale(1.1);
+}
+
+#dashed-switch-button {
+    position: fixed;
+    top: 4rem;
+    right: 2rem;
+    z-index: 2;
+    text-decoration: line-through;
+}
+
+#dashed-switch-button.active {
+    text-decoration: none;
+}
+
+#download-button {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    width: 24px;
+    height: 24px;
+    background-image: url("./get_app-24px.svg");
+    z-index: 2;
+    background-position: 50% 50%;
+    border: none;
+    border-radius: 4px;
+    background-size: 24px;
+    background-color: transparent;
+}
+
+#import-button {
+    position: fixed;
+    top: 2rem;
+    right: 4.5rem;
+    width: 24px;
+    height: 24px;
+    background-image: url("./get_app-24px.svg");
+    z-index: 2;
+    background-position: 50% 50%;
+    border: none;
+    transform: rotate(180deg);
+    border-radius: 4px;
+    background-size: 24px;
+    background-color: transparent;
+}
+
+#app {
+    width: 100vw;
+    height: 100vh;
+    background-color: #dddedb;
+}
+
+#svg-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+}
+
+#svg-layer > polyline {
+    stroke: black;
+    stroke-width: 5;
+    fill: none;
+}
+
+#svg-layer > polyline.dashed {
+    stroke-dasharray: 10, 10;
+}
+
+#svg-layer > polyline:hover {
+    stroke: #3b3b3b;
+    stroke-width: 5;
+    fill: none;
+    cursor: pointer;
+}
+
+.text-box {
+    position: absolute;
+    z-index: 2;
+    font-size: 20px;
+    line-height: 20px;
+    padding: 0.25rem;
+    border: dashed transparent 2px;
+    letter-spacing: 2px;
+}
+
+.text-box:hover, .text-box:active {
+    cursor: pointer;
+}
+
+.text-box:focus {
+    border: dashed #03abbc 2px;
+    border-radius: 0.25rem;
+    outline: none;
+}
+
+
