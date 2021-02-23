@@ -11,11 +11,13 @@ let activeDrawingElement;
 let isDragging = false;
 let lastMousePosX = 0;
 let lastMousePosY = 0;
-let isEditingText = false;
+let selectedTextBox = undefined;
+let selectedDrawing = undefined;
 let drawingPoints = [];
 let drawingPolygonEl = undefined;
 let drawingTimestamp = undefined;
 let useDashedLines = false;
+let mouseDownTimestamp = undefined;
 
 const importData = () => {
     const input = document.createElement('input');
@@ -60,8 +62,6 @@ const addText = (x, y, text = "", focus = true) => {
     `);
     let element = document.getElementById("el-" + elementId);
     element.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        console.log("[app] Mouse down on text: ", e);
         isDragging = true;
         activeTextElement = element;
         lastMousePosX = e.clientX;
@@ -74,11 +74,11 @@ const addText = (x, y, text = "", focus = true) => {
     }
     element.addEventListener("click", (e) => {
         e.stopPropagation();
-        isEditingText = true;
+        selectedTextBox = element;
         element.focus();
     });
     element.addEventListener("blur", () => {
-        isEditingText = false;
+        selectedTextBox = undefined;
     });
 }
 
@@ -94,14 +94,18 @@ const addDrawing = (points, userDashlines_) => {
                       stroke-linecap="round" />
         `);
     drawingPolygonEl = document.getElementById("el-" + elementId);
-    console.log("[app] Added drawing el: ", drawingPolygonEl);
     drawingPolygonEl.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        console.log("[app] Mouse down on drawing: ", e, drawingPolygonEl);
         isDragging = true;
         activeDrawingElement = document.getElementById("el-" + elementId);
         lastMousePosX = e.clientX;
         lastMousePosY = e.clientY;
+    });
+    drawingPolygonEl.addEventListener("click", e => {
+        e.stopPropagation();
+        if (Date.now() - mouseDownTimestamp < 300) {
+            selectedDrawing = document.getElementById("el-" + elementId);
+            selectedDrawing.classList.add("selected");
+        }
     });
 }
 
@@ -142,7 +146,7 @@ const continueDrawing = (e) => {
 }
 
 document.addEventListener("mousedown", (e) => {
-    console.log("[app] Global mousedown: ", e);
+    mouseDownTimestamp = Date.now();
     isDragging = true;
     lastMousePosX = e.clientX;
     lastMousePosY = e.clientY;
@@ -152,23 +156,23 @@ document.addEventListener("mousedown", (e) => {
 });
 
 document.addEventListener("mouseup", () => {
-    console.log("[app] Mouse up...");
     isDragging = false;
     activeTextElement = undefined;
     activeDrawingElement = undefined;
     drawingPolygonEl = undefined;
     drawingPoints = [];
+    if (selectedDrawing) selectedDrawing.classList.remove("selected");
 });
 
 document.addEventListener("mousemove", (e) => {
-    if (isDragging && activeDrawingElement && !isEditingText) {
+    if (isDragging && activeDrawingElement && !selectedTextBox) {
         moveDrawing(e);
-    } else if (isDragging && activeTextElement && !isEditingText) {
+    } else if (isDragging && activeTextElement && !selectedTextBox) {
         const diffY = lastMousePosY - e.clientY;
         const diffX = lastMousePosX - e.clientX;
         activeTextElement.style.top = (activeTextElement.offsetTop - diffY) + "px";
         activeTextElement.style.left = (activeTextElement.offsetLeft - diffX) + "px";
-    } else if (isDragging && !isEditingText && drawingPolygonEl) {
+    } else if (isDragging && !selectedTextBox && drawingPolygonEl) {
         continueDrawing(e);
     }
     lastMousePosX = e.clientX;
@@ -176,7 +180,7 @@ document.addEventListener("mousemove", (e) => {
 });
 
 document.addEventListener('dblclick', (e) => {
-    if (isEditingText) return;
+    if (selectedTextBox) return;
     addText(e.clientX + "px", e.clientY + "px", "");
 });
 
@@ -201,7 +205,25 @@ importButtonNode.addEventListener("click", () => {
     importData();
 });
 
-dashedSwitchButtonNode.addEventListener("click", () => {
+dashedSwitchButtonNode.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (selectedDrawing) {
+        if (selectedDrawing.classList.contains("dashed")) {
+            selectedDrawing.classList.remove("dashed");
+        } else {
+            selectedDrawing.classList.add("dashed");
+        }
+        selectedDrawing = undefined;
+    }
     useDashedLines = !useDashedLines;
     dashedSwitchButtonNode.className = useDashedLines ? "active" : "";
+});
+
+document.addEventListener("keydown", e => {
+    if (["Backspace", "Delete"].includes(e.code)) {
+        if (selectedDrawing) {
+            selectedDrawing.parentNode.removeChild(selectedDrawing);
+            selectedDrawing = undefined;
+        }
+    }
 });
